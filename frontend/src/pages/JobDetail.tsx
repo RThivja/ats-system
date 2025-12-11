@@ -159,9 +159,10 @@ export default function JobDetail() {
         <div className="bg-gray-50 min-h-screen font-sans pb-20">
             {/* Hero Header */}
             <div className="h-64 bg-gradient-to-r from-gray-900 to-blue-900 relative">
-                <button onClick={() => navigate('/')} className="absolute top-6 left-6 text-white/80 hover:text-white font-medium flex items-center gap-2">
-                    ← Back to Jobs
-                </button>
+                <div className="absolute top-6 left-6 flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-blue-600 font-bold text-xl shadow-md">A</div>
+                    <span className="text-xl font-bold text-white tracking-tight">ATS</span>
+                </div>
             </div>
 
             <main className="max-w-6xl mx-auto px-4 -mt-24 relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8">

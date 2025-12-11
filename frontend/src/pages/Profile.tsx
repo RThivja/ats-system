@@ -154,9 +154,10 @@ export default function Profile() {
             {/* Header */}
             <header className="bg-white border-b border-gray-200">
                 <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-                    <button onClick={() => navigate('/')} className="text-gray-600 hover:text-gray-900 font-medium flex items-center gap-2">
-                        ← Back to Jobs
-                    </button>
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">A</div>
+                        <span className="text-xl font-bold text-gray-900 tracking-tight">ATS</span>
+                    </div>
                     {!editing && (
                         <button onClick={() => setEditing(true)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-colors text-sm">
                             ✏️ Edit Profile

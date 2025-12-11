@@ -55,9 +55,10 @@ export default function MyApplications() {
             {/* Header */}
             <header className="bg-white border-b border-gray-100">
                 <div className="max-w-4xl mx-auto px-4 py-4">
-                    <button onClick={() => navigate('/')} className="text-gray-600 hover:text-gray-900 font-medium flex items-center gap-2">
-                        ← Back to Jobs
-                    </button>
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">A</div>
+                        <span className="text-xl font-bold text-gray-900 tracking-tight">ATS</span>
+                    </div>
                 </div>
             </header>
 
