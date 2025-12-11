@@ -194,16 +194,16 @@ export default function Home() {
             )}
 
             {/* Hero Section */}
-            <div className="relative bg-gray-900 py-24 overflow-hidden">
+            <div className="relative bg-gray-900 py-16 overflow-hidden">
                 <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
                 <div className="absolute top-0 right-0 w-1/2 h-full bg-blue-600/20 blur-3xl rounded-full translate-x-1/2"></div>
 
                 <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
                     <h1 className="text-5xl md:text-6xl font-extrabold text-white tracking-tight mb-6 leading-tight">
-                        Find the job that <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Fits You.</span>
+                        Find candidates that <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Match Perfectly.</span>
                     </h1>
                     <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
-                        AI-powered matching to connect you with roles where you'll excel. No more guessing.
+                        AI-powered matching helps recruiters find top talent faster. Smart filtering, instant skill analysis, and automated screening.
                     </p>
 
                     <div className="bg-white p-2 rounded-2xl shadow-xl flex items-center max-w-2xl mx-auto">

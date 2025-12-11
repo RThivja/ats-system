@@ -105,7 +105,7 @@ export default function CreateJob() {
                                     <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2 mb-4">Requirements & Skills</h3>
                                     <div className="mb-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
                                         <p className="text-xs text-blue-800 font-bold">🤖 AI Matching Tip</p>
-                                        <p className="text-xs text-blue-700 mt-1">Specific skills (e.g. "React.js" instead of "Fronend") help our AI find better candidates.</p>
+                                        <p className="text-xs text-blue-700 mt-1">Specific skills (e.g. "React.js" instead of "Frontend") help our AI find better candidates.</p>
                                     </div>
                                     <div className="space-y-4">
                                         <div>
@@ -164,7 +164,7 @@ export default function CreateJob() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-bold text-gray-700 mb-1">Salary Range</label>
+                                            <label className="block text-sm font-bold text-gray-700 mb-1">Salary Range <span className="text-gray-400 font-normal">(Optional)</span></label>
                                             <input
                                                 type="text"
                                                 value={formData.salary}

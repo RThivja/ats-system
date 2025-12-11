@@ -160,11 +160,16 @@ export default function Profile() {
                         </div>
                         <span className="text-xl font-bold text-gray-900 tracking-tight">ATS</span>
                     </div>
-                    {!editing && (
-                        <button onClick={() => setEditing(true)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-colors text-sm">
-                            ✏️ Edit Profile
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => navigate(-1)} className="text-gray-600 hover:text-gray-900 font-medium text-sm flex items-center gap-1">
+                            ← Back
                         </button>
-                    )}
+                        {!editing && (
+                            <button onClick={() => setEditing(true)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-colors text-sm">
+                                ✏️ Edit Profile
+                            </button>
+                        )}
+                    </div>
                 </div>
             </header>
 
