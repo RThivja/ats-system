@@ -2,19 +2,19 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_production';
 
-interface UserPayload {
+export interface JwtPayload {
     userId: string;
     email: string;
     role: string;
 }
 
-export const generateToken = (payload: UserPayload): string => {
+export const generateToken = (payload: JwtPayload): string => {
     return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
 };
 
-export const verifyToken = (token: string): UserPayload | null => {
+export const verifyToken = (token: string): JwtPayload | null => {
     try {
-        return jwt.verify(token, JWT_SECRET) as UserPayload;
+        return jwt.verify(token, JWT_SECRET) as JwtPayload;
     } catch (error) {
         return null;
     }
