@@ -33,8 +33,7 @@ export default function CreateJob() {
         setLoading(true);
 
         try {
-            const token = localStorage.getItem('token');
-            const response = await apiClient.post('/jobs', {
+            await apiClient.post('/jobs', {
                 ...formData,
                 requiredSkills: formData.requiredSkills.split(',').map(s => s.trim()),
             });
