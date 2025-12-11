@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  RECRUITER
+  APPLICANT
+}
+
+enum ApplicationStatus {
+  APPLIED
+  VIEWED
+  SHORTLISTED
+  INTERVIEW
+  REJECTED
+  HIRED
+}
+
+enum ExperienceLevel {
+  ENTRY
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+}
+
+enum EducationLevel {
+  HIGH_SCHOOL
+  ASSOCIATE
+  BACHELOR
+  MASTER
+  PHD
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      UserRole
+  name      String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recruiterProfile RecruiterProfile?
+  applicantProfile ApplicantProfile?
+
+  @@index([email])
+  @@index([role])
+}
+
+model RecruiterProfile {
+  id          String @id @default(uuid())
+  userId      String @unique
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName String
+  description String? @db.Text
+
+  jobs Job[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ApplicantProfile {
+  id           String          @id @default(uuid())
+  userId       String          @unique
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills       String          @db.Text // JSON array of skills
+  experience   ExperienceLevel
+  education    EducationLevel
+  resumeUrl    String?
+  bio          String?         @db.Text
+  location     String?
+  yearsOfExp   Int             @default(0)
+
+  applications Application[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([experience])
+  @@index([education])
+}
+
+model Job {
+  id                  String          @id @default(uuid())
+  recruiterId         String
+  recruiter           RecruiterProfile @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+  
+  title               String
+  description         String          @db.Text
+  requiredSkills      String          @db.Text // JSON array of required skills
+  experienceRequired  ExperienceLevel
+  educationRequired   EducationLevel
+  location            String?
+  jobType             String?         // full-time, part-time, remote, etc.
+  salary              String?
+  otherRequirements   String?         @db.Text
+  
+  isActive            Boolean         @default(true)
+  
+  applications        Application[]
+
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@index([recruiterId])
+  @@index([isActive])
+  @@index([createdAt])
+}
+
+model Application {
+  id              String            @id @default(uuid())
+  jobId           String
+  job             Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  applicantId     String
+  applicant       ApplicantProfile  @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  
+  coverLetter     String?           @db.Text
+  status          ApplicationStatus @default(APPLIED)
+  matchScore      Float?            // Calculated match percentage (0-100)
+  
+  appliedAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([jobId, applicantId]) // Prevent duplicate applications
+  @@index([jobId])
+  @@index([applicantId])
+  @@index([status])
+  @@index([matchScore])
+  @@index([appliedAt])
+}
