@@ -21,6 +21,9 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
         const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
         const decoded = verifyToken(token);
+        if (!decoded) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
         req.user = decoded;
 
         next();
