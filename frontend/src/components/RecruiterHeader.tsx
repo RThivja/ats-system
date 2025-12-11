@@ -17,11 +17,11 @@ export default function RecruiterHeader() {
             <div className="max-w-7xl mx-auto px-4 py-4">
                 <div className="flex justify-between items-center">
                     {/* Logo */}
-                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/dashboard')}>
-                        <div className="w-10 h-10 rounded-lg overflow-hidden shadow-md">
-                            <img src="/logo.png" alt="ATS Logo" className="w-full h-full object-cover" />
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/dashboard')}>
+                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-md">
+                            A
                         </div>
-                        <span className="text-2xl font-bold gradient-text">ATS</span>
+                        <span className="text-xl font-bold text-gray-900 tracking-tight">ATS</span>
                     </div>
 
                     {/* Navigation */}
