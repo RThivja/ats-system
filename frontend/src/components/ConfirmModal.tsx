@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 interface ConfirmModalProps {
     isOpen: boolean;
@@ -39,8 +39,8 @@ export default function ConfirmModal({
                             onClose();
                         }}
                         className={`px-4 py-2 text-white rounded-lg font-medium transition-colors ${isDestructive
-                                ? 'bg-red-600 hover:bg-red-700'
-                                : 'bg-blue-600 hover:bg-blue-700'
+                            ? 'bg-red-600 hover:bg-red-700'
+                            : 'bg-blue-600 hover:bg-blue-700'
                             }`}
                     >
                         {confirmText}
