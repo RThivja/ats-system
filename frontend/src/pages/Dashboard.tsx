@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import RecruiterHeader from '../components/RecruiterHeader';
 import '../styles/theme.css';
+import apiClient from '../services/api';
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -26,45 +27,44 @@ export default function Dashboard() {
 
     const fetchStats = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/users/recruiter/dashboard', {
-                headers: { 'Authorization': `Bearer ${token}` }
+            // Using apiClient which has base URL and interceptors configured
+            const response = await apiClient.get('/users/recruiter/dashboard');
+
+            // Axios returns data directly in response.data
+            const data = response.data;
+            console.log('Dashboard data:', data); // Debug
+
+            // Backend returns { stats: {...}, recentApplications: [...] }
+            const statsData = data.stats || data;
+            setStats({
+                totalJobs: statsData.totalJobs || 0,
+                totalApplications: statsData.totalApplications || 0,
+                pendingReview: statsData.applicationsByStatus?.APPLIED || 0, // Only APPLIED, not VIEWED
+                shortlisted: statsData.applicationsByStatus?.SHORTLISTED || 0,
             });
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Dashboard data:', data); // Debug
-                // Backend returns { stats: {...}, recentApplications: [...] }
-                const statsData = data.stats || data;
-                setStats({
-                    totalJobs: statsData.totalJobs || 0,
-                    totalApplications: statsData.totalApplications || 0,
-                    pendingReview: statsData.applicationsByStatus?.APPLIED || 0, // Only APPLIED, not VIEWED
-                    shortlisted: statsData.applicationsByStatus?.SHORTLISTED || 0,
-                });
 
-                // Group pending applications by job
-                const pendingByJob = new Map<string, { jobTitle: string, count: number }>();
-                data.recentApplications?.forEach((app: any) => {
-                    if (app.status === 'APPLIED') {
-                        const existing = pendingByJob.get(app.jobId);
-                        if (existing) {
-                            existing.count++;
-                        } else {
-                            pendingByJob.set(app.jobId, {
-                                jobTitle: app.job?.title || 'Job',
-                                count: 1
-                            });
-                        }
+            // Group pending applications by job
+            const pendingByJob = new Map<string, { jobTitle: string, count: number }>();
+            data.recentApplications?.forEach((app: any) => {
+                if (app.status === 'APPLIED') {
+                    const existing = pendingByJob.get(app.jobId);
+                    if (existing) {
+                        existing.count++;
+                    } else {
+                        pendingByJob.set(app.jobId, {
+                            jobTitle: app.job?.title || 'Job',
+                            count: 1
+                        });
                     }
-                });
+                }
+            });
 
-                const pendingList = Array.from(pendingByJob.entries()).map(([jobId, data]) => ({
-                    jobId,
-                    jobTitle: data.jobTitle,
-                    count: data.count
-                }));
-                setPendingJobs(pendingList);
-            }
+            const pendingList = Array.from(pendingByJob.entries()).map(([jobId, data]) => ({
+                jobId,
+                jobTitle: data.jobTitle,
+                count: data.count
+            }));
+            setPendingJobs(pendingList);
         } catch (error) {
             console.error('Failed to fetch stats:', error);
         } finally {

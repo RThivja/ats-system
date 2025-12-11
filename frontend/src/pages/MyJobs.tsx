@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import RecruiterHeader from '../components/RecruiterHeader';
 import '../styles/theme.css';
+import apiClient from '../services/api';
 
 interface Job {
   id: string;
@@ -34,14 +35,8 @@ export default function MyJobs() {
 
   const fetchJobs = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/jobs/my/jobs', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setJobs(data.jobs);
-      }
+      const response = await apiClient.get('/jobs/my/jobs');
+      setJobs(response.data.jobs);
     } catch (error) {
       console.error('Failed to fetch jobs:', error);
     } finally {
@@ -53,14 +48,8 @@ export default function MyJobs() {
     if (!confirm('Are you sure you want to delete this job?')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/jobs/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        setJobs(jobs.filter(j => j.id !== id));
-      }
+      await apiClient.delete(`/jobs/${id}`);
+      setJobs(jobs.filter(j => j.id !== id));
     } catch (error) {
       console.error('Failed to delete job:', error);
     }
@@ -99,7 +88,7 @@ export default function MyJobs() {
                   <div className="flex-1">
                     <h3 className="text-xl font-bold mb-2">{job.title}</h3>
                     <p className="text-gray-700 mb-3 line-clamp-2">{job.description}</p>
-                    
+
                     <div className="flex flex-wrap gap-4 text-sm mb-3">
                       {job.location && <span className="text-gray-600">📍 {job.location}</span>}
                       {job.jobType && <span className="text-gray-600">💼 {job.jobType}</span>}

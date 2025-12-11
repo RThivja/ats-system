@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/theme.css';
+import apiClient from '../services/api';
 
 interface Job {
     id: string;
@@ -36,7 +37,7 @@ export default function Home() {
     const [authLoading, setAuthLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    const { user, login, logout } = useAuth();
+    const { user, login, register, logout } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -50,11 +51,8 @@ export default function Home() {
 
     const fetchJobs = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/jobs');
-            if (response.ok) {
-                const data = await response.json();
-                setJobs(data.jobs || []);
-            }
+            const response = await apiClient.get('/jobs');
+            setJobs(response.data.jobs || []);
         } catch (error) {
             console.error('Failed to fetch jobs:', error);
         } finally {
@@ -88,31 +86,20 @@ export default function Home() {
                 }
             } else {
                 // Register
-                const response = await fetch('http://localhost:5000/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name,
-                        email,
-                        password,
-                        phone,
-                        role,
-                        companyName: role === 'RECRUITER' ? companyName : undefined,
-                        skills: role === 'APPLICANT' ? skills.split(',').map(s => s.trim()) : undefined,
-                        experience: 'ENTRY',
-                        education: 'BACHELOR',
-                    }),
+                // Register calls authService which uses apiClient
+                await register({
+                    name,
+                    email,
+                    password,
+                    phone,
+                    role,
+                    companyName: role === 'RECRUITER' ? companyName : undefined,
+                    skills: role === 'APPLICANT' ? skills.split(',').map(s => s.trim()) : undefined,
+                    experience: 'ENTRY',
+                    education: 'BACHELOR',
                 });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    window.location.reload();
-                } else {
-                    const data = await response.json();
-                    setError(data.error || 'Registration failed');
-                }
+                setShowAuthModal(false);
+                window.location.reload();
             }
         } catch (err: any) {
             setError(err.response?.data?.error || `${authMode === 'login' ? 'Login' : 'Registration'} failed`);

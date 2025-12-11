@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import RecruiterHeader from '../components/RecruiterHeader';
 import '../styles/theme.css';
+import apiClient from '../services/api';
 
 export default function CreateJob() {
     const { user } = useAuth();
@@ -33,26 +34,16 @@ export default function CreateJob() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/jobs', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    requiredSkills: formData.requiredSkills.split(',').map(s => s.trim()),
-                })
+            const response = await apiClient.post('/jobs', {
+                ...formData,
+                requiredSkills: formData.requiredSkills.split(',').map(s => s.trim()),
             });
 
-            if (response.ok) {
-                navigate('/my-jobs');
-            } else {
-                const data = await response.json();
-                setError(data.error || 'Failed to create job');
-            }
-        } catch (err) {
-            setError('Failed to create job');
+            // axios throws on error, or returns data in response.data
+            navigate('/my-jobs');
+        } catch (err: any) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Failed to create job');
         } finally {
             setLoading(false);
         }
