@@ -16,7 +16,7 @@
         },
         "build": {
           "cmds": [
-            "cd backend && npx prisma generate && npm run build"
+            "cd backend && npx prisma db push && npx prisma generate && npm run build"
           ]
         }
       }
