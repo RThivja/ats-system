@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import RecruiterHeader from '../components/RecruiterHeader';
@@ -160,8 +160,8 @@ export default function ViewApplications() {
                   key={status}
                   onClick={() => setFilterType(status)}
                   className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${filterType === status
-                      ? 'bg-gray-800 text-white'
-                      : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
+                    ? 'bg-gray-800 text-white'
+                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
                     }`}
                 >
                   {status === 'ALL' ? 'All' : status.charAt(0) + status.slice(1).toLowerCase()}
@@ -205,9 +205,9 @@ export default function ViewApplications() {
 
                   <div className="flex justify-between items-center mt-2">
                     <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wide ${app.status === 'APPLIED' ? 'bg-blue-100 text-blue-700' :
-                        app.status === 'VIEWED' ? 'bg-purple-100 text-purple-700' :
-                          app.status === 'SHORTLISTED' ? 'bg-green-100 text-green-700' :
-                            'bg-gray-100 text-gray-600'
+                      app.status === 'VIEWED' ? 'bg-purple-100 text-purple-700' :
+                        app.status === 'SHORTLISTED' ? 'bg-green-100 text-green-700' :
+                          'bg-gray-100 text-gray-600'
                       }`}>
                       {app.status}
                     </span>

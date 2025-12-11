@@ -23,7 +23,7 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-    const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+
 
     // Auth form state
     const [email, setEmail] = useState('');

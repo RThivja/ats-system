@@ -41,7 +41,7 @@ export default function JobDetail() {
     const [missingSkills, setMissingSkills] = useState<string[]>([]);
 
     // Auth Modal Trigger (Localized state or via context if available, here using simple redirect to home with state if needed, or simple alert)
-    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
 
     useEffect(() => {
         fetchJob();
@@ -104,7 +104,7 @@ export default function JobDetail() {
         const missing: string[] = [];
 
         jobSkills.forEach(js => {
-            const match = userSkills.some(us => us === js || us.includes(js) || js.includes(us));
+            const match = userSkills.some((us: string) => us === js || us.includes(js) || js.includes(us));
             if (match) hits++;
             else missing.push(js);
         });
