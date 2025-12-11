@@ -160,7 +160,9 @@ export default function JobDetail() {
             {/* Hero Header */}
             <div className="h-64 bg-gradient-to-r from-gray-900 to-blue-900 relative">
                 <div className="absolute top-6 left-6 flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-blue-600 font-bold text-xl shadow-md">A</div>
+                    <div className="w-10 h-10 rounded-lg overflow-hidden shadow-lg bg-white">
+                        <img src="/logo.png" alt="ATS Logo" className="w-full h-full object-cover" />
+                    </div>
                     <span className="text-xl font-bold text-white tracking-tight">ATS</span>
                 </div>
             </div>

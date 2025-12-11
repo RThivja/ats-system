@@ -115,7 +115,9 @@ export default function Home() {
             <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40 transition-all">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">A</div>
+                        <div className="w-10 h-10 rounded-lg overflow-hidden shadow-md">
+                            <img src="/logo.png" alt="ATS Logo" className="w-full h-full object-cover" />
+                        </div>
                         <span className="text-xl font-bold text-gray-900 tracking-tight">ATS</span>
                     </div>
 
