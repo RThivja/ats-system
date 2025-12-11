@@ -24,45 +24,55 @@ export const calculateMatchScore = (
 ): number => {
     let score = 0;
 
-    // 1. Skills Match (40% weight)
+    // 1. Skills Match (70% weight) - CRITICAL
     const skillsScore = calculateSkillsMatch(job.requiredSkills, applicant.skills);
-    score += skillsScore * 0.4;
+    score += skillsScore * 0.7;
 
-    // 2. Experience Level Match (30% weight)
+    // 2. Experience Level Match (20% weight)
     const experienceScore = calculateExperienceMatch(
         job.experienceRequired,
         applicant.experience,
         applicant.yearsOfExp
     );
-    score += experienceScore * 0.3;
+    score += experienceScore * 0.2;
 
-    // 3. Education Match (20% weight)
+    // 3. Education Match (5% weight)
     const educationScore = calculateEducationMatch(
         job.educationRequired,
         applicant.education
     );
-    score += educationScore * 0.2;
+    score += educationScore * 0.05;
 
-    // 4. Location Match (10% weight)
+    // 4. Location Match (5% weight)
     const locationScore = calculateLocationMatch(job.location, applicant.location);
-    score += locationScore * 0.1;
+    score += locationScore * 0.05;
 
     return Math.round(score);
 };
 
 /**
- * Calculate skills overlap percentage
+ * Calculate skills overlap percentage - STRICT MATCHING
  */
 const calculateSkillsMatch = (required: string[], applicantSkills: string[]): number => {
     if (required.length === 0) return 100;
 
+    // Normalize: lowercase and trim
     const requiredLower = required.map(s => s.toLowerCase().trim());
     const applicantLower = applicantSkills.map(s => s.toLowerCase().trim());
+    const applicantSet = new Set(applicantLower);
 
     let matchCount = 0;
     for (const skill of requiredLower) {
-        if (applicantLower.some(as => as.includes(skill) || skill.includes(as))) {
+        // Strict match or very specific substring (e.g. nodejs matches node)
+        // But preventing 'java' matching 'javascript'
+        if (applicantSet.has(skill)) {
             matchCount++;
+        } else {
+            // Optional: Handle variations like "react.js" vs "react"
+            // For now, strict match is safer to avoid false positives
+            if (applicantLower.some(as => as === skill)) {
+                matchCount++;
+            }
         }
     }
 

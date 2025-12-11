@@ -146,7 +146,11 @@ export const getJobApplications = async (req: Request, res: Response) => {
         }
 
         const { jobId } = req.params;
-        const { status, minMatchScore, sortBy = 'matchScore', order = 'desc' } = req.query;
+        const { status, minMatchScore, sortBy = 'matchScore', order = 'desc', page = 1, limit = 10, search, experience, skill } = req.query;
+
+        const pageNum = parseInt(page as string) || 1;
+        const limitNum = parseInt(limit as string) || 10;
+        const skip = (pageNum - 1) * limitNum;
 
         // Get recruiter profile
         const recruiterProfile = await prisma.recruiterProfile.findUnique({
@@ -173,9 +177,10 @@ export const getJobApplications = async (req: Request, res: Response) => {
         // Build where clause
         const where: any = {
             jobId,
+            applicant: {}
         };
 
-        if (status) {
+        if (status && status !== 'ALL') {
             where.status = status;
         }
 
@@ -183,6 +188,33 @@ export const getJobApplications = async (req: Request, res: Response) => {
             where.matchScore = {
                 gte: parseFloat(minMatchScore as string),
             };
+        }
+
+        // Search Term (Name or Email)
+        if (search) {
+            where.applicant.user = {
+                OR: [
+                    { name: { contains: search as string } },
+                    { email: { contains: search as string } }
+                ]
+            };
+        }
+
+        // Experience Filter
+        if (experience && experience !== 'ALL') {
+            where.applicant.experience = experience as string;
+        }
+
+        // Skill Filter
+        if (skill) {
+            where.applicant.skills = {
+                contains: skill as string
+            };
+        }
+
+        // Clean up empty objects
+        if (Object.keys(where.applicant).length === 0) {
+            delete where.applicant;
         }
 
         // Build orderBy clause
@@ -194,6 +226,9 @@ export const getJobApplications = async (req: Request, res: Response) => {
         } else {
             orderBy.matchScore = 'desc'; // Default
         }
+
+        // Get total count for pagination
+        const total = await prisma.application.count({ where });
 
         const applications = await prisma.application.findMany({
             where,
@@ -208,22 +243,60 @@ export const getJobApplications = async (req: Request, res: Response) => {
                             }
                         }
                     }
+                },
+                job: {
+                    select: {
+                        requiredSkills: true
+                    }
                 }
             },
             orderBy,
+            skip,
+            take: limitNum,
         });
 
-        // Parse skills JSON and add resumeUrl
-        const applicationsWithParsedData = applications.map(app => ({
-            ...app,
-            applicant: {
-                ...app.applicant,
-                skills: JSON.parse(app.applicant.skills),
-                resumeUrl: app.applicant.resumeUrl, // Include CV URL
-            }
-        }));
+        // Parse skills JSON and add detailed analysis (Fuzzy)
+        const applicationsWithParsedData = applications.map(app => {
+            const applicantSkills: string[] = JSON.parse(app.applicant.skills || '[]');
+            const jobSkills: string[] = JSON.parse(app.job.requiredSkills || '[]');
 
-        res.json({ applications: applicationsWithParsedData });
+            const matchedSkills: string[] = [];
+            const missingSkills: string[] = [];
+
+            const appSkillsArray = applicantSkills.map(s => s.toLowerCase().trim());
+
+            jobSkills.forEach(skill => {
+                const normalizedReq = skill.toLowerCase().trim();
+                const isMatched = appSkillsArray.some(appSkill =>
+                    appSkill === normalizedReq ||
+                    appSkill.includes(normalizedReq) ||
+                    normalizedReq.includes(appSkill)
+                );
+
+                if (isMatched) matchedSkills.push(skill);
+                else missingSkills.push(skill);
+            });
+
+            return {
+                ...app,
+                applicant: {
+                    ...app.applicant,
+                    skills: applicantSkills,
+                    resumeUrl: app.applicant.resumeUrl,
+                },
+                analysis: { matchedSkills, missingSkills }
+            };
+        });
+
+        res.json({
+            applications: applicationsWithParsedData,
+            pagination: {
+                total,
+                page: pageNum,
+                limit: limitNum,
+                totalPages: Math.ceil(total / limitNum)
+            }
+        });
     } catch (error: any) {
         console.error('Get job applications error:', error);
         res.status(500).json({ error: 'Failed to fetch applications' });

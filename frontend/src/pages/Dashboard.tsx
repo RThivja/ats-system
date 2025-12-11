@@ -27,37 +27,34 @@ export default function Dashboard() {
 
     const fetchStats = async () => {
         try {
-            // Using apiClient which has base URL and interceptors configured
             const response = await apiClient.get('/users/recruiter/dashboard');
-
-            // Axios returns data directly in response.data
             const data = response.data;
-            console.log('Dashboard data:', data); // Debug
-
-            // Backend returns { stats: {...}, recentApplications: [...] }
             const statsData = data.stats || data;
+
             setStats({
                 totalJobs: statsData.totalJobs || 0,
                 totalApplications: statsData.totalApplications || 0,
-                pendingReview: statsData.applicationsByStatus?.APPLIED || 0, // Only APPLIED, not VIEWED
+                pendingReview: statsData.applicationsByStatus?.APPLIED || 0,
                 shortlisted: statsData.applicationsByStatus?.SHORTLISTED || 0,
             });
 
             // Group pending applications by job
             const pendingByJob = new Map<string, { jobTitle: string, count: number }>();
-            data.recentApplications?.forEach((app: any) => {
-                if (app.status === 'APPLIED') {
-                    const existing = pendingByJob.get(app.jobId);
-                    if (existing) {
-                        existing.count++;
-                    } else {
-                        pendingByJob.set(app.jobId, {
-                            jobTitle: app.job?.title || 'Job',
-                            count: 1
-                        });
+            if (data.recentApplications) {
+                data.recentApplications.forEach((app: any) => {
+                    if (app.status === 'APPLIED') {
+                        const existing = pendingByJob.get(app.jobId);
+                        if (existing) {
+                            existing.count++;
+                        } else {
+                            pendingByJob.set(app.jobId, {
+                                jobTitle: app.job?.title || 'Job',
+                                count: 1
+                            });
+                        }
                     }
-                }
-            });
+                });
+            }
 
             const pendingList = Array.from(pendingByJob.entries()).map(([jobId, data]) => ({
                 jobId,
@@ -73,108 +70,155 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="page-bg min-h-screen">
+        <div className="bg-gray-50 min-h-screen font-sans">
             <RecruiterHeader />
 
-            <main className="max-w-7xl mx-auto px-4 py-12">
-                <h1 className="text-4xl font-bold gradient-text mb-8">Recruiter Dashboard</h1>
+            <main className="max-w-7xl mx-auto px-4 py-8">
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+                        <p className="text-gray-500 text-sm">Welcome back, {user?.name}</p>
+                    </div>
+                    <span className="text-sm text-gray-400">{new Date().toLocaleDateString()}</span>
+                </div>
 
                 {loading ? (
-                    <div className="grid grid-cols-4 gap-6">
+                    <div className="grid grid-cols-4 gap-6 animate-pulse">
                         {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="card p-6 animate-pulse">
-                                <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-                                <div className="h-8 bg-gray-300 rounded w-3/4"></div>
-                            </div>
+                            <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
                         ))}
                     </div>
                 ) : (
                     <>
-                        {/* Pending Review Alert */}
-                        {stats.pendingReview > 0 && (
-                            <div className="bg-orange-50 border-l-4 border-orange-500 p-6 mb-6 rounded-lg">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <span className="text-2xl">⚠️</span>
-                                    <div>
-                                        <p className="font-bold text-orange-800 text-lg">
-                                            {stats.pendingReview} Application{stats.pendingReview > 1 ? 's' : ''} Pending Review
-                                        </p>
-                                        <p className="text-sm text-orange-700">
-                                            Review applications to move candidates forward
-                                        </p>
+                        {/* 1. Stats Overview */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div
+                                onClick={() => navigate('/my-jobs')}
+                                className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow"
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="p-2 bg-blue-50 rounded-lg">
+                                        <span className="text-xl">💼</span>
                                     </div>
+                                    <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">Total</span>
                                 </div>
+                                <p className="text-3xl font-bold text-gray-900 mb-1">{stats.totalJobs}</p>
+                                <p className="text-sm text-gray-500">Active Jobs Posting</p>
+                            </div>
 
-                                {/* List of jobs with pending applications */}
-                                <div className="space-y-2 mt-4">
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="p-2 bg-purple-50 rounded-lg">
+                                        <span className="text-xl">👥</span>
+                                    </div>
+                                    <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">Total</span>
+                                </div>
+                                <p className="text-3xl font-bold text-gray-900 mb-1">{stats.totalApplications}</p>
+                                <p className="text-sm text-gray-500">Candidates Applied</p>
+                            </div>
+
+                            <div
+                                onClick={() => stats.pendingReview > 0 && navigate(`/applications/${pendingJobs[0]?.jobId || ''}`)}
+                                className={`bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden ${stats.pendingReview > 0 ? 'cursor-pointer hover:shadow-md ring-2 ring-orange-100' : ''}`}
+                            >
+                                <div className="flex justify-between items-start mb-4 relative z-10">
+                                    <div className="p-2 bg-orange-50 rounded-lg">
+                                        <span className="text-xl">⏳</span>
+                                    </div>
+                                    <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-full">Action Needed</span>
+                                </div>
+                                <p className="text-3xl font-bold text-gray-900 mb-1 relative z-10">{stats.pendingReview}</p>
+                                <p className="text-sm text-gray-500 relative z-10">Pending Review</p>
+                                {/* Decorative BG circle */}
+                                <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-orange-50 rounded-full opacity-50"></div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="p-2 bg-green-50 rounded-lg">
+                                        <span className="text-xl">⭐</span>
+                                    </div>
+                                    <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">Qualified</span>
+                                </div>
+                                <p className="text-3xl font-bold text-gray-900 mb-1">{stats.shortlisted}</p>
+                                <p className="text-sm text-gray-500">Shortlisted Candidates</p>
+                            </div>
+                        </div>
+
+                        {/* 2. Quick Actions Section (Moved to Middle) */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+                            <h2 className="text-lg font-bold text-gray-900 mb-1">Quick Actions</h2>
+                            <p className="text-sm text-gray-500 mb-6">Manage your recruiting pipeline efficiently</p>
+
+                            <div className="flex flex-wrap gap-4">
+                                <button
+                                    onClick={() => navigate('/create-job')}
+                                    className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-md group"
+                                >
+                                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 text-lg">➕</div>
+                                    <div className="text-left">
+                                        <p className="font-bold text-sm">Post New Job</p>
+                                        <p className="text-xs text-blue-100">Create a new listing</p>
+                                    </div>
+                                </button>
+
+                                <button
+                                    onClick={() => navigate('/my-jobs')}
+                                    className="flex items-center gap-3 px-6 py-4 bg-white border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all shadow-sm group"
+                                >
+                                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 text-lg">📋</div>
+                                    <div className="text-left">
+                                        <p className="font-bold text-sm">Manage Jobs</p>
+                                        <p className="text-xs text-gray-500">View active listings</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 3. Pending Reviews (Moved to Bottom) */}
+                        {stats.pendingReview > 0 && (
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-orange-50/50">
+                                    <div>
+                                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                            <span className="flex h-3 w-3 relative">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                                            </span>
+                                            Pending Reviews
+                                        </h2>
+                                        <p className="text-sm text-gray-500 mt-1">Candidates waiting for your response</p>
+                                    </div>
+                                    <button
+                                        onClick={() => navigate(`/applications/${pendingJobs[0]?.jobId}`)}
+                                        className="text-sm font-bold text-orange-600 hover:text-orange-700 hover:underline"
+                                    >
+                                        Review All
+                                    </button>
+                                </div>
+                                <div className="divide-y divide-gray-100">
                                     {pendingJobs.map((job) => (
-                                        <div key={job.jobId} className="flex items-center justify-between bg-white p-3 rounded-lg border border-orange-200">
-                                            <div>
-                                                <p className="font-semibold text-gray-800">{job.jobTitle}</p>
-                                                <p className="text-sm text-gray-600">{job.count} pending application{job.count > 1 ? 's' : ''}</p>
+                                        <div key={job.jobId} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">
+                                                    {job.count}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-gray-900">{job.jobTitle}</p>
+                                                    <p className="text-sm text-gray-500">New applicants applied recently</p>
+                                                </div>
                                             </div>
                                             <button
                                                 onClick={() => navigate(`/applications/${job.jobId}`)}
-                                                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-semibold text-sm"
+                                                className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:border-orange-500 hover:text-orange-600 font-medium text-sm transition-colors"
                                             >
-                                                Review →
+                                                Review Candidates →
                                             </button>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         )}
-
-                        <div className="grid grid-cols-4 gap-6 mb-8">
-                            <div
-                                onClick={() => navigate('/my-jobs')}
-                                className="card p-6 cursor-pointer hover:shadow-lg"
-                            >
-                                <p className="text-gray-600 mb-2">Total Jobs</p>
-                                <p className="text-3xl font-bold text-blue-600">{stats.totalJobs}</p>
-                                <p className="text-xs text-gray-500 mt-2">Click to view →</p>
-                            </div>
-                            <div className="card p-6">
-                                <p className="text-gray-600 mb-2">Total Applications</p>
-                                <p className="text-3xl font-bold text-green-600">{stats.totalApplications}</p>
-                            </div>
-                            <div
-                                onClick={() => {
-                                    if (stats.pendingReview > 0) {
-                                        if (pendingJobs.length > 0) {
-                                            navigate(`/applications/${pendingJobs[0].jobId}`);
-                                        } else {
-                                            navigate('/my-jobs');
-                                        }
-                                    } else {
-                                        alert('No pending applications to review!');
-                                    }
-                                }}
-                                className={`card p-6 ${stats.pendingReview > 0 ? 'cursor-pointer hover:shadow-lg border-2 border-orange-200' : ''}`}
-                            >
-                                <p className="text-gray-600 mb-2">Pending Review</p>
-                                <p className="text-3xl font-bold text-orange-600">{stats.pendingReview}</p>
-                                {stats.pendingReview > 0 && (
-                                    <p className="text-xs text-orange-600 mt-2 font-semibold">Click to review →</p>
-                                )}
-                            </div>
-                            <div className="card p-6">
-                                <p className="text-gray-600 mb-2">Shortlisted</p>
-                                <p className="text-3xl font-bold text-purple-600">{stats.shortlisted}</p>
-                            </div>
-                        </div>
-
-                        <div className="card p-8 text-center">
-                            <h3 className="text-2xl font-bold mb-4">Quick Actions</h3>
-                            <div className="flex gap-4 justify-center">
-                                <button onClick={() => navigate('/create-job')} className="btn-primary">
-                                    ➕ Post New Job
-                                </button>
-                                <button onClick={() => navigate('/my-jobs')} className="btn-primary">
-                                    📋 View My Jobs
-                                </button>
-                            </div>
-                        </div>
                     </>
                 )}
             </main>
