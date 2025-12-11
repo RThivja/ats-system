@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/theme.css';
+import apiClient from '../services/api';
 
 interface Application {
     id: string;
@@ -41,14 +42,8 @@ export default function MyApplications() {
 
     const fetchApplications = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/applications/my/applications', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setApplications(data.applications);
-            }
+            const response = await apiClient.get('/applications/my/applications');
+            setApplications(response.data.applications);
         } catch (error) {
             console.error('Failed to fetch applications:', error);
         } finally {

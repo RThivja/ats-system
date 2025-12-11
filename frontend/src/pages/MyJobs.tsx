@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import RecruiterHeader from '../components/RecruiterHeader';
 import '../styles/theme.css';
 import apiClient from '../services/api';
+import ConfirmModal from '../components/ConfirmModal';
 
 interface Job {
   id: string;
@@ -24,6 +25,7 @@ export default function MyJobs() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user || user.role !== 'RECRUITER') {
@@ -44,12 +46,18 @@ export default function MyJobs() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this job?')) return;
+
+  const handleDeleteClick = (id: string) => {
+    setJobToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!jobToDelete) return;
 
     try {
-      await apiClient.delete(`/jobs/${id}`);
-      setJobs(jobs.filter(j => j.id !== id));
+      await apiClient.delete(`/jobs/${jobToDelete}`);
+      setJobs(jobs.filter(j => j.id !== jobToDelete));
+      setJobToDelete(null);
     } catch (error) {
       console.error('Failed to delete job:', error);
     }
@@ -58,6 +66,16 @@ export default function MyJobs() {
   return (
     <div className="page-bg min-h-screen">
       <RecruiterHeader />
+
+      <ConfirmModal
+        isOpen={!!jobToDelete}
+        onClose={() => setJobToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Delete Job Posting"
+        message="Are you sure you want to delete this job posting? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+      />
 
       <main className="max-w-7xl mx-auto px-4 py-12">
         <h1 className="text-4xl font-bold gradient-text mb-8">My Job Postings</h1>
@@ -114,7 +132,7 @@ export default function MyJobs() {
                       View Applications
                     </button>
                     <button
-                      onClick={() => handleDelete(job.id)}
+                      onClick={() => handleDeleteClick(job.id)}
                       className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 font-semibold text-sm"
                     >
                       Delete

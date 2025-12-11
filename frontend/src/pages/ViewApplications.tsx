@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import RecruiterHeader from '../components/RecruiterHeader';
+import Toast from '../components/Toast';
 import '../styles/theme.css';
+import apiClient from '../services/api';
 
 interface Application {
   id: string;
@@ -38,6 +40,7 @@ export default function ViewApplications() {
   const navigate = useNavigate();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null);
 
   // Filters
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -60,12 +63,9 @@ export default function ViewApplications() {
 
   const fetchApplications = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/applications/job/${jobId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
+      const response = await apiClient.get(`/applications/job/${jobId}`);
+      if (response.data) {
+        const data = response.data;
         const sorted = data.applications.sort((a: Application, b: Application) => b.matchScore - a.matchScore);
 
         // Auto-update APPLIED to VIEWED (recruiter is viewing them now!)
@@ -89,17 +89,11 @@ export default function ViewApplications() {
 
   const updateStatus = async (appId: string, newStatus: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/applications/${appId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ status: newStatus })
+      const response = await apiClient.patch(`/applications/${appId}/status`, {
+        status: newStatus
       });
 
-      if (response.ok) {
+      if (response.data) {
         setApplications(applications.map(app =>
           app.id === appId ? { ...app, status: newStatus } : app
         ));
@@ -118,7 +112,7 @@ export default function ViewApplications() {
 
     setSelectedApps(new Set());
     setBulkAction('');
-    alert(`${selectedApps.size} applications updated to ${bulkAction}!`);
+    setToast({ message: `${selectedApps.size} applications updated to ${bulkAction}!`, type: 'success' });
   };
 
   const toggleSelect = (appId: string) => {
@@ -172,6 +166,13 @@ export default function ViewApplications() {
 
   return (
     <div className="page-bg min-h-screen">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
       <RecruiterHeader />
 
       <main className="max-w-7xl mx-auto px-4 py-12">

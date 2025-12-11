@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/theme.css';
+import apiClient from '../services/api';
 
 interface Job {
     id: string;
@@ -49,11 +50,8 @@ export default function JobDetail() {
 
     const fetchJob = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/jobs/${id}`);
-            if (response.ok) {
-                const data = await response.json();
-                setJob(data.job);
-            }
+            const response = await apiClient.get(`/jobs/${id}`);
+            setJob(response.data.job);
         } catch (error) {
             console.error('Failed to fetch job:', error);
         } finally {
@@ -63,16 +61,9 @@ export default function JobDetail() {
 
     const fetchProfile = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/users/profile', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                // Auto-fill CV if available in profile
-                if (data.resumeUrl) {
-                    setResumeUrl(data.resumeUrl);
-                }
+            const response = await apiClient.get('/users/profile');
+            if (response.data.resumeUrl) {
+                setResumeUrl(response.data.resumeUrl);
             }
         } catch (error) {
             console.error('Failed to fetch profile:', error);
@@ -81,15 +72,9 @@ export default function JobDetail() {
 
     const checkIfApplied = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/applications/my/applications', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                const applied = data.applications.some((app: any) => app.jobId === id);
-                setAlreadyApplied(applied);
-            }
+            const response = await apiClient.get('/applications/my/applications');
+            const applied = response.data.applications.some((app: any) => app.jobId === id);
+            setAlreadyApplied(applied);
         } catch (error) {
             console.error('Failed to check application:', error);
         }
@@ -123,29 +108,17 @@ export default function JobDetail() {
                 });
             }
 
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/applications/apply', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    jobId: id,
-                    coverLetter,
-                    resumeData
-                })
+            await apiClient.post('/applications/apply', {
+                jobId: id,
+                coverLetter,
+                resumeData
             });
 
-            if (response.ok) {
-                setSuccess(true);
-                setTimeout(() => navigate('/my-applications'), 2000);
-            } else {
-                const data = await response.json();
-                setError(data.error || 'Application failed');
-            }
-        } catch (err) {
-            setError('Application failed');
+            setSuccess(true);
+            setTimeout(() => navigate('/my-applications'), 2000);
+        } catch (err: any) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Application failed');
         } finally {
             setApplying(false);
         }

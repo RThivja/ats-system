@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Toast from '../components/Toast';
 import '../styles/theme.css';
+import apiClient from '../services/api';
+
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
 
 export default function Profile() {
     const { user } = useAuth();
@@ -33,12 +36,9 @@ export default function Profile() {
 
     const fetchProfile = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/users/profile', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (response.ok) {
-                const data = await response.json();
+            const response = await apiClient.get('/users/profile');
+            if (response.data) {
+                const data = response.data;
                 console.log('Fetched profile:', data);
                 setProfile(data);
 
@@ -86,7 +86,7 @@ export default function Profile() {
         }
 
         try {
-            const token = localStorage.getItem('token');
+            // const token = localStorage.getItem('token'); // Removed unused
             const skillsArray = formData.skills.split(',').map(s => s.trim()).filter(s => s.length > 0);
 
             if (skillsArray.length === 0) {
@@ -101,55 +101,41 @@ export default function Profile() {
                 const formDataCV = new FormData();
                 formDataCV.append('cv', cvFile);
 
-                const uploadResponse = await fetch('http://localhost:5000/api/upload/cv', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: formDataCV
+                const uploadResponse = await apiClient.post('/upload/cv', formDataCV, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
                 });
 
                 setUploading(false);
 
-                if (uploadResponse.ok) {
-                    const uploadData = await uploadResponse.json();
-                    resumeUrl = `http://localhost:5000${uploadData.url}`;
+                if (uploadResponse.data) {
+                    resumeUrl = `${BASE_URL}${uploadResponse.data.url}`;
                 } else {
                     setToast({ message: 'Failed to upload CV', type: 'error' });
                     return;
                 }
             }
 
-            const response = await fetch('http://localhost:5000/api/users/applicant/profile', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    name: formData.name,
-                    phone: formData.phone,
-                    skills: skillsArray,
-                    experience: formData.experience,
-                    education: formData.education,
-                    resumeUrl: resumeUrl,
-                })
+            const response = await apiClient.put('/users/applicant/profile', {
+                name: formData.name,
+                phone: formData.phone,
+                skills: skillsArray,
+                experience: formData.experience,
+                education: formData.education,
+                resumeUrl: resumeUrl,
             });
 
-            if (response.ok) {
-                const updatedData = await response.json();
+            if (response.data) {
+                const updatedData = response.data;
                 console.log('Updated profile:', updatedData);
                 setToast({ message: '✨ Profile updated successfully!', type: 'success' });
                 setEditing(false);
                 setCvFile(null);
                 await fetchProfile();
-            } else {
-                const data = await response.json();
-                setToast({ message: data.error || 'Failed to update profile', type: 'error' });
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to update profile:', error);
-            setToast({ message: 'Failed to update profile', type: 'error' });
+            const msg = error.response?.data?.error || 'Failed to update profile';
+            setToast({ message: msg, type: 'error' });
         }
     };
 
