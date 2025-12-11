@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import RecruiterHeader from '../components/RecruiterHeader';
 import Toast from '../components/Toast';
 import '../styles/theme.css';
-import apiClient from '../services/api';
+import apiClient, { getFileUrl } from '../services/api';
 
 interface Application {
   id: string;
@@ -322,7 +322,7 @@ export default function ViewApplications() {
                   <div className="h-full bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     {selectedApp.applicant.resumeUrl ? (
                       <iframe
-                        src={selectedApp.applicant.resumeUrl}
+                        src={getFileUrl(selectedApp.applicant.resumeUrl)}
                         className="w-full h-full"
                         title="Resume"
                       />

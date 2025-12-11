@@ -2,10 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Toast from '../components/Toast';
-import '../styles/theme.css';
-import apiClient from '../services/api';
+import apiClient, { getFileUrl } from '../services/api';
 
-const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
 
 export default function Profile() {
     const { user } = useAuth();
@@ -119,7 +117,7 @@ export default function Profile() {
                 setUploading(false);
 
                 if (uploadResponse.data) {
-                    resumeUrl = `${BASE_URL}${uploadResponse.data.url}`;
+                    resumeUrl = uploadResponse.data.url;
                 } else {
                     setToast({ message: 'Failed to upload CV', type: 'error' });
                     return;
@@ -309,7 +307,7 @@ export default function Profile() {
                                         />
                                     </div>
                                 </div>
-                                {formData.resumeUrl && <p className="text-xs text-blue-600 mt-2">Current: <a href={formData.resumeUrl} target="_blank" className="underline">View PDF</a></p>}
+                                {formData.resumeUrl && <p className="text-xs text-blue-600 mt-2">Current: <a href={getFileUrl(formData.resumeUrl)} target="_blank" className="underline">View PDF</a></p>}
                             </div>
                         </div>
 
@@ -355,7 +353,7 @@ export default function Profile() {
                             </div>
 
                             {profile?.resumeUrl && (
-                                <a href={profile.resumeUrl} target="_blank" rel="noreferrer" className="block w-full py-3 bg-white border border-gray-200 text-center rounded-xl shadow-sm hover:shadow-md transition-shadow font-bold text-gray-700">
+                                <a href={getFileUrl(profile.resumeUrl)} target="_blank" rel="noreferrer" className="block w-full py-3 bg-white border border-gray-200 text-center rounded-xl shadow-sm hover:shadow-md transition-shadow font-bold text-gray-700">
                                     📄 View Resume
                                 </a>
                             )}
