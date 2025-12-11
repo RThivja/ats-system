@@ -51,9 +51,7 @@ export default function Home() {
     const fetchJobs = async () => {
         setLoading(true);
         try {
-            console.log('Fetching jobs from:', apiClient.defaults.baseURL);
             const response = await apiClient.get('/jobs');
-            console.log('Jobs Response:', response.data);
             setJobs(response.data.jobs || []);
         } catch (error: any) {
             console.error('Failed to fetch jobs:', error);
