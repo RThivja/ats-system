@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 interface RegisterModalProps {
     isOpen: boolean;
@@ -21,7 +20,6 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
 
     if (!isOpen) return null;
 
@@ -97,8 +95,8 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                             type="button"
                             onClick={() => setRole('APPLICANT')}
                             className={`py-3 rounded-lg font-semibold transition ${role === 'APPLICANT'
-                                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
-                                    : 'bg-gray-100 text-gray-700'
+                                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
+                                : 'bg-gray-100 text-gray-700'
                                 }`}
                         >
                             Job Seeker
@@ -107,8 +105,8 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                             type="button"
                             onClick={() => setRole('RECRUITER')}
                             className={`py-3 rounded-lg font-semibold transition ${role === 'RECRUITER'
-                                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
-                                    : 'bg-gray-100 text-gray-700'
+                                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
+                                : 'bg-gray-100 text-gray-700'
                                 }`}
                         >
                             Recruiter
